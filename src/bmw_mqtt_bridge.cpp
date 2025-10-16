@@ -148,6 +148,8 @@ static std::string LOCAL_PASSWORD;
 static std::string ID_TOKEN_FILE;
 static std::string REFRESH_TOKEN_FILE;
 
+static std::string LOCAL_STATUS_TOPIC;
+
 // ===================== Globals =====================
 static std::atomic<bool> g_stop{false};
 static std::string g_id_token;
@@ -213,7 +215,7 @@ static void publish_status(bool connected) {
     j["connected"] = connected;
     j["timestamp"] = static_cast<long>(time(nullptr));
     std::string payload = j.dump();
-    mosquitto_publish(g_local, nullptr, "bmw/status",
+    mosquitto_publish(g_local, nullptr, LOCAL_STATUS_TOPIC.c_str(),
                       payload.size(), payload.data(), 0, true);
 }
 
@@ -445,6 +447,8 @@ int main(){
     ID_TOKEN_FILE       = (std::filesystem::path(TDIR) / "id_token.txt").string();
     REFRESH_TOKEN_FILE  = (std::filesystem::path(TDIR) / "refresh_token.txt").string();
 
+    LOCAL_STATUS_TOPIC = LOCAL_PREFIX + "status";
+
     // ensure token directory exists
     if (!std::filesystem::exists(TDIR)) {
         std::cerr << "✖ Token directory missing: " << TDIR << "\n"
@@ -494,7 +498,7 @@ int main(){
 
     mosquitto_reconnect_delay_set(g_local, 1, 10, true);
     const char* lwt = "{\"connected\":false}";
-    mosquitto_will_set(g_local, "bmw/status", strlen(lwt), lwt, 0, true);
+    mosquitto_will_set(g_local, LOCAL_STATUS_TOPIC.c_str() , strlen(lwt), lwt, 0, true);
 
     // Set credentials if provided
     if (!LOCAL_USER.empty() && !LOCAL_PASSWORD.empty()) {
