@@ -1,11 +1,22 @@
 services:
-  bmw-bridge:
-    build: .
+  bmw-mqtt-bridge:
+    image: grogi/bmw-mqtt-bridge
+    container_name: bmw-mqtt-bridge
+
     environment:
-      - XDG_STATE_HOME=/app/state          # Parent; Bridge nutzt /app/state/bmw-mqtt-bridge
+      # - XDG_STATE_HOME=/app/state          # Parent; Bridge nutzt /app/state/bmw-mqtt-bridge
       - LOCAL_HOST=host.docker.internal    # MQTT läuft i.d.R. auf dem Host
-      - LOCAL_PORT=1883
-      - LOCAL_PREFIX=bmw/
+      # - LOCAL_PORT=1883
+      # - LOCAL_PREFIX=bmw/
+      # - LOCAL_USERNAME=USERNAME            # MQTT-Benutzername
+      # - LOCAL_PASSWORD=PASSWORD            # MQTT-Passwort
+
+      - CLIENT_ID=11111111-1111-1111-1111-111111111111
+      - GCID=11111111-1111-1111-1111-111111111111
     volumes:
-      - ${HOME}/.local/state:/app/state    # Host-State ↔ Container-State (bind mount)
+      - bmw-mqtt-bridge:/app/state    # Host-State ↔ Container-State (bind mount)
     restart: unless-stopped
+    # command: [ "tail", "-f", "/dev/null" ]
+
+volumes:
+  bmw-mqtt-bridge
